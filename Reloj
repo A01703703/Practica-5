@@ -1,0 +1,109 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity reloj is
+    Port ( Clk: in std_logic;
+            PB1: in std_logic;
+            PB2: in std_logic;
+            PB3, PB4: in std_logic;
+            SW1, SW2: in std_logic_vector(3 downto 0);
+            Hrs_d : out STD_LOGIC_VECTOR (3 downto 0);
+           Hrs_un : out STD_LOGIC_VECTOR (3 downto 0);
+           Min_d : out STD_LOGIC_VECTOR (3 downto 0);
+           Min_un : out STD_LOGIC_VECTOR (3 downto 0);
+           Seg_d : out STD_LOGIC_VECTOR (3 downto 0);
+           Seg_un, Smult : out STD_LOGIC_VECTOR (3 downto 0);
+           S, L1,L2,L3,L4: out std_logic;
+           BCD: out std_logic_vector(7 downto 0));
+           
+           
+end reloj;
+
+architecture Behavioral of reloj is
+component Cont60s is
+    Port ( Clk : in STD_LOGIC;
+           Dec : out STD_LOGIC_VECTOR (3 downto 0);
+           Uni : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end component;
+
+component Cont12 is
+    Port ( Clk : in STD_LOGIC;
+           Dec : out STD_LOGIC_VECTOR (3 downto 0);
+           Uni : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end component;
+
+component FFJK is
+    Port ( J : in STD_LOGIC;
+           K : in STD_LOGIC;
+           R : in STD_LOGIC;
+           Qin: in std_logic;
+           Clk : in STD_LOGIC;
+           Q : out STD_LOGIC);
+end component;
+
+component clock100 is
+    Port ( Clk : in STD_LOGIC;
+           Cout : out STD_LOGIC);
+end component;
+
+component segm7 is
+    Port ( Clk : in STD_LOGIC;
+           D3 : in STD_LOGIC_VECTOR (3 downto 0);
+           D2 : in STD_LOGIC_VECTOR (3 downto 0);
+           D1 : in STD_LOGIC_VECTOR (3 downto 0);
+           D0 : in STD_LOGIC_VECTOR (3 downto 0);
+           S8 : out STD_LOGIC_VECTOR (7 downto 0);
+           En : out STD_LOGIC_VECTOR (3 downto 0));
+end component;
+
+component LED1 is
+    Port ( S : in STD_LOGIC;
+           Q : out STD_LOGIC);
+end component;
+
+component setalarm is
+    Port ( PB : in STD_LOGIC;
+            Clk: in std_logic;
+            I1 : in STD_LOGIC_VECTOR (3 downto 0);
+            I2 : in STD_LOGIC_VECTOR (3 downto 0);
+            I3 : in STD_LOGIC_VECTOR (3 downto 0);
+            I4 : in STD_LOGIC_VECTOR (3 downto 0);
+           SW1 : in STD_LOGIC_VECTOR (3 downto 0);
+           SW2 : in STD_LOGIC_VECTOR (3 downto 0);
+           C1 : out STD_LOGIC_VECTOR (3 downto 0);
+           C2 : out STD_LOGIC_VECTOR (3 downto 0);
+           C3 : out STD_LOGIC_VECTOR (3 downto 0);
+           C4 : out STD_LOGIC_VECTOR (3 downto 0));
+end component;
+
+Signal Qhd, Qhu, Qmd, Qmu, Qsd, Qsu, Mult, Qhd2, Qhu2, Qmd2, Qmu2, QLd, QLu: std_logic_vector(3 downto 0);
+Signal Ss, Sm, Sh, C100, Qs, Sam, SL3, Qa: std_logic;
+signal BCD1, BCD2: std_logic_vector(7 downto 0);
+
+begin
+ContS: Cont60s port map (C100, Qsd, Qsu, Ss);
+ContM: Cont60s port map (Ss, Qmd, Qmu, Sm);
+ContH: Cont12 port map (Sm, Qhd, Qhu, Sh);
+Hrs_d <= Qhd;
+Hrs_un <= Qhu;
+Min_d <= Qmd;
+Min_un <= Qmu;
+Seg_d <= Qsd;
+Seg_un <= Qsu;
+S <= Sh;
+
+Clk100: clock100 port map (Clk, C100);
+Seg71: segm7 port map (C100, Qhd, Qhu, Qmd, Qmu, BCD1, Mult);
+Led11: LED1 port map (Sam, L1);
+LED2: LED1 port map (C100, L2);
+Sam <= Qhd(0) and Qhu(1);
+BCD <= BCD1 when PB1 = '0' else BCD2 when PB1 = '1';
+Alarm: setalarm port map (PB2, C100, Qhd2, Qhu2, Qmd2, Qmu2, SW1, SW2, Qhd2, Qhu2, Qmd2, Qmu2);
+LED3: Cont60s port map (C100, QLd, QLu, SL3);
+L3 <= '0' when ((PB3 = '1' or SL3 = '0') and Qa='0') else '1' when ((PB3 = '0' and SL3 = '1') and Qa='1');
+Push4: FFJK port map ('1','1','0',Qa,PB4,Qa);
+L4 <= '0' when Qa='0' else '1' when Qa='1';
+Smult <= Mult;
+
+end Behavioral;
