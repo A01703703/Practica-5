@@ -1,0 +1,27 @@
+entity Cont12 is
+    Port ( Clk : in STD_LOGIC;
+           Dec : out STD_LOGIC_VECTOR (3 downto 0);
+           Uni : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end Cont12;
+
+architecture Behavioral of Cont12 is
+component Cont16 is
+Port( R,Clk: in std_logic;
+    Q: out std_logic_vector(3 downto 0));
+end component;
+    
+Signal Qdec, Qun: std_logic_vector(3 downto 0);
+Signal Rdec, Run, Inc: std_logic;
+
+begin
+Cont16dec: Cont16 port map (Rdec, Inc, Qdec);
+Cont16un: Cont16 port map (Run, Clk, Qun);
+Rdec <= (Qun(0) and Qun(3)) or (Qdec(0) and Qun(1));
+Run <= Qdec(0) and Qun(1);
+Inc <= Qun(0) and Qun(3);
+S <= Run;
+Dec <= Qdec;
+Uni <= Qun;
+
+end Behavioral;
