@@ -1,0 +1,25 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity FFJK is
+    Port ( J : in STD_LOGIC;
+           K : in STD_LOGIC;
+           R : in STD_LOGIC;
+           Qin: in std_logic;
+           Clk : in STD_LOGIC;
+           Q : out STD_LOGIC);
+end FFJK;
+
+architecture Behavioral of FFJK is
+signal Qp: std_logic;
+
+begin
+process(Clk, R)
+begin
+    if(R = '1') then Qp <= '0';
+    elsif (Clk ='1') and Clk'event then 
+        Qp <= (J and not Qin) or (not K and Qin);
+    end if;
+    end process;
+Q <= Qp;
+
+end Behavioral;
