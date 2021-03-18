@@ -1,0 +1,30 @@
+entity Cont60s is
+    Port ( Clk : in STD_LOGIC;
+           Dec : out STD_LOGIC_VECTOR (3 downto 0);
+           Uni : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end Cont60s;
+
+architecture Behavioral of Cont60s is
+component Cont6 is
+    Port ( Clk : in STD_LOGIC;
+           Q : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end component;
+
+component Cont10 is
+    Port ( Clk : in STD_LOGIC;
+           Q : out STD_LOGIC_VECTOR (3 downto 0));
+end component;
+
+Signal Qdec, Qun: std_logic_vector(3 downto 0);
+Signal Inc: std_logic;
+
+begin
+Cont10a: Cont10 port map (Clk, Qun);
+Cont6a: Cont6 port map (Inc, Qdec, S);
+Dec <= Qdec;
+Uni <= Qun;
+Inc <= Qun(3) and Qun(0);
+
+end Behavioral;
